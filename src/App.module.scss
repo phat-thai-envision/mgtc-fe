@@ -1,0 +1,34 @@
+.appContainer {
+}
+body {
+  * {
+    font-family: "SF Pro Text";
+    color: #151a30;
+    font-weight: 400;
+    box-sizing: border-box;
+    text-align: left;
+  }
+}
+.flex {
+  display: flex;
+}
+
+.flexCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.absCenterVer {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.layoutPadding20 {
+  padding: 20px 20px 0 20px;
+}
+
+.mB16 {
+  margin-bottom: 16px;
+}
