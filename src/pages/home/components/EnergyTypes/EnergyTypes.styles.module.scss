@@ -1,0 +1,48 @@
+.energyType {
+  background: linear-gradient(256.28deg, #45392e 0%, #292831 100%);
+  padding: 8px 16px;
+  border-radius: 8px;
+  position: relative;
+  height: 70px;
+}
+
+.energyTypeSelected {
+  &::before {
+    position: absolute;
+    content: "";
+    width: 4px;
+    background-color: #50aefb;
+    left: 0;
+    top: 0;
+    height: 65%;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+.energyTypeId {
+  font-family: "SF Pro Text";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  text-align: left;
+}
+.energyTypeValue {
+  font-family: "SF Pro Text";
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  text-align: left;
+  margin-top: 10px;
+}
+
+.energyTypeIntensity {
+  font-family: "SF Pro Text";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  text-align: left;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+}
