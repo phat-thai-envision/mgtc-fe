@@ -1,8 +1,7 @@
 .appContainer {
   min-width: 1200px;
   height: 100vh;
-  border: solid 1px;
-  background-color: #151a30;
+  background-color: #fff;
 }
 body {
   @font-face {
@@ -36,7 +35,7 @@ body {
 
   * {
     font-family: "SF Pro Text";
-    color: #fff;
+    color: #151a30;
     font-weight: 400;
     box-sizing: border-box;
     text-align: left;

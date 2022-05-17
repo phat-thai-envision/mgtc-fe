@@ -10,12 +10,12 @@ const LeftHeader = () => (
     <EnergyTypes />
   </div>
 );
-// const LeftMain = () => <SankeyChart />;
+const LeftMain = () => <SankeyChart />;
 
 const LeftCol = () => (
   <div className={styles.leftColContainer}>
     <LeftHeader />
-    {/* <LeftMain /> */}
+    <LeftMain />
   </div>
 );
 

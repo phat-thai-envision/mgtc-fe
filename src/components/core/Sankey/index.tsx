@@ -1,170 +1,75 @@
-import React, { useEffect, useRef } from "react";
-import * as d3 from "d3";
-import * as d3Sankey from "d3-sankey";
+import React, { useEffect, useMemo, useState } from "react";
+import useMeasure from "react-use/lib/useMeasure";
 
-interface SankeyProps {
-  data: any[];
-  edit: boolean;
+import { getData, SankeyData } from "./data";
+import { SankeyRects } from "./SankeyRect";
+import { SankeyLinks } from "./SankeyLink";
+import { SankeyLabels } from "./SankeyLabel";
+import {
+  colorLinkFunc,
+  colorRectFunc,
+  formatLinkTitleFunc,
+  formatRectTitleFunc,
+  makeSankeyFunc,
+} from "./parse";
+
+interface SankeyChartProps {
+  width: number;
+  height: number;
 }
 
-const size = {
-  width: 700,
-  height: 600,
-};
-
-const getMousePosition = (event: any) => {
-  const CTM = event.target.getScreenCTM();
-
-  return {
-    x: (event.clientX - CTM.e) / CTM.a,
-    y: (event.clientY - CTM.f) / CTM.d,
-  };
-};
-
-const Rect = (props: any) => {
-  const { index, x0, x1, y0, y1, name, value, length, colors } = props;
-  return (
-    <>
-      <rect
-        x={x0}
-        y={y0}
-        width={x1 - x0}
-        height={y1 - y0}
-        fill={colors(index / length)}
-        data-index={index}
-      />
-      <text
-        x={x0 < size.width / 2 ? x1 + 6 : x0 - 6}
-        y={(y1 + y0) / 2}
-        style={{
-          fill: d3.rgb(colors(index / length)).darker() as any,
-          alignmentBaseline: "middle",
-          fontSize: 9,
-          textAnchor: x0 < size.width / 2 ? "start" : "end",
-          pointerEvents: "none",
-          userSelect: "none",
-        }}
-      >
-        {name}
-      </text>
-    </>
-  );
-};
-
-const SankeyLink = (props: any) => {
-  const { data, width, length, colors } = props;
-  const link = d3Sankey.sankeyLinkHorizontal();
-
-  return (
-    <>
-      <defs>
-        <linearGradient
-          id={`gradient-${data.index}`}
-          gradientUnits="userSpaceOnUse"
-          x1={data.source.x1}
-          x2={data.target.x0}
-        >
-          <stop offset="0" stopColor={colors(data.source.index / length)} />
-          <stop offset="100%" stopColor={colors(data.target.index / length)} />
-        </linearGradient>
-      </defs>
-      <path
-        d={link(data) as any}
-        fill="none"
-        stroke={`url(#gradient-${data.index})`}
-        strokeOpacity={0.5}
-        strokeWidth={width}
-      />
-    </>
-  );
-};
-
-const Sankey: React.FC<SankeyProps> = (props: SankeyProps) => {
-  const { data, edit } = props;
-  if (!d3 || !d3Sankey) {
-    return null;
-  }
-  const dragElement = useRef<any>(null);
-  const graph = useRef<any>(null);
-  const offset = useRef<any>(null);
-  const colors = edit ? d3.interpolateWarm : d3.interpolateCool;
-  const sankey = d3Sankey
-    .sankey()
-    .nodeAlign(d3Sankey.sankeyJustify)
-    .nodeWidth(10)
-    .nodePadding(10)
-    .extent([
-      [0, 0],
-      [size.width, size.height],
-    ]);
-
-  const onMouseUp = (e: any) => {
-    dragElement.current = null;
-  };
-
-  const onMouseDown = (e: any) => {
-    if (e.target.tagName === "rect") {
-      dragElement.current = e.target;
-      offset.current = getMousePosition(e);
-      offset.current.y -= parseFloat(e.target.getAttributeNS(null, "y"));
-    }
-  };
-
-  const onMouseMove = (e: any) => {
-    if (dragElement.current) {
-      const coord = getMousePosition(e);
-      dragElement.current.setAttributeNS(null, "y", coord.y - offset.current.y);
-    }
-  };
+export const SankeyChart = ({
+  width,
+  height,
+}: SankeyChartProps): JSX.Element | null => {
+  const [data, setData] = useState<SankeyData | null>(null);
 
   useEffect(() => {
-    window.addEventListener("mouseup", onMouseUp);
-    window.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-
-    return () => {
-      window.removeEventListener("mouseup", onMouseUp);
-      window.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-    };
+    getData().then(setData);
   }, []);
 
-  if (data) {
-    graph.current = sankey(data as any);
-    const { links, nodes } = graph.current;
+  const sankeyGen = useMemo(
+    () =>
+      makeSankeyFunc({
+        width,
+        height,
+      }),
+    [width, height]
+  );
 
-    return (
-      <svg width={size.width} height={size.height}>
-        <g>
-          {links.map((d: any, i: any) => (
-            <SankeyLink
-              data={d}
-              width={d.width}
-              length={nodes.length}
-              colors={colors}
-            />
-          ))}
-        </g>
-        <g>
-          {nodes.map((d: any, i: any) => (
-            <Rect
-              index={d.index}
-              x0={d.x0}
-              x1={d.x1}
-              y0={d.y0}
-              y1={d.y1}
-              name={d.name}
-              value={d.value}
-              length={nodes.length}
-              colors={colors}
-            />
-          ))}
-        </g>
-      </svg>
-    );
-  }
+  const sankeyResult = useMemo(() => {
+    if (!data) return null;
 
-  return <div>Loading</div>;
+    return sankeyGen(data);
+  }, [data, sankeyGen]);
+
+  if (!data || !sankeyResult) return null;
+
+  const { nodes, links } = sankeyResult;
+  console.log("colorRectFunc", colorRectFunc);
+  return (
+    <svg width={width} height={height}>
+      <SankeyRects
+        nodes={nodes}
+        colorFunc={colorRectFunc}
+        titleFunc={formatRectTitleFunc}
+      />
+      <SankeyLinks
+        links={links}
+        colorFunc={colorLinkFunc}
+        titleFunc={formatLinkTitleFunc}
+      />
+      <SankeyLabels nodes={nodes} width={width} />
+    </svg>
+  );
 };
 
-export default Sankey;
+export const Sankey = (): JSX.Element => {
+  const [ref, measurements] = useMeasure<any>();
+  const { width } = measurements;
+  return (
+    <div ref={ref}>
+      {width > 0 && <SankeyChart width={width} height={600} />}
+    </div>
+  );
+};
